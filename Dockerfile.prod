@@ -1,0 +1,4 @@
+FROM scratch
+
+COPY ./ft_strace /
+ENTRYPOINT ["/ft_strace"]
