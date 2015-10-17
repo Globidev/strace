@@ -1,4 +1,4 @@
-NAME			=	strace
+NAME			=	ft_strace
 
 rwildcard		=	$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)\
 					$(filter $(subst *,%,$2),$d))
@@ -12,7 +12,8 @@ LIB_NAMES		=
 CFLAGS			=	-Wall -Wextra -Werror -O3\
 					$(foreach dir, $(INCLUDE_DIRS), -I $(dir))\
 					$(foreach define, $(PP_DEFINES), -D $(define))
-LFLAGS			=	$(foreach dir, $(LIB_DIRS), -L $(dir))\
+LFLAGS			=	-static\
+					$(foreach dir, $(LIB_DIRS), -L $(dir))\
 					$(foreach name, $(LIB_NAMES), -l$(name))
 
 OBJ_DIR			=	objs

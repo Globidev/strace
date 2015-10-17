@@ -32,5 +32,5 @@
 *.dSYM/
 
 # Custom
-strace
+ft_strace
 .depend
