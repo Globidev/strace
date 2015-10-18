@@ -42,7 +42,7 @@ depend: .depend
 
 .depend: $(SRCS)
 	@rm -f ./.depend
-	@$(foreach src, $^, $(COMPILER) $(CFLAGS) -MM -MT $(OBJ_DIR)/./$(src:.cpp=.o) $(src) >> ./.depend;)
+	@$(foreach src, $^, $(COMPILER) $(CFLAGS) -MM -MT $(OBJ_DIR)/./$(src:.c=.o) $(src) >> ./.depend;)
 
 -include .depend
 
