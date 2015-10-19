@@ -1,4 +1,4 @@
-FROM scratch
+FROM busybox
 
 COPY ./ft_strace /
 ENTRYPOINT ["/ft_strace"]
