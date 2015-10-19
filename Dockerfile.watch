@@ -1,0 +1,13 @@
+FROM debian
+
+RUN apt-get update -yqq
+RUN apt-get install -yqq \
+    curl \
+    inotify-tools
+
+# Installing docker
+RUN sh -c 'curl -L https://get.docker.com/builds/$(uname -s)/$(uname -m)/docker-latest' > /usr/local/bin/docker
+RUN chmod +x /usr/local/bin/docker
+
+WORKDIR /strace
+ENTRYPOINT ["./watch.sh"]

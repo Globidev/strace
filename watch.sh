@@ -8,6 +8,6 @@ inotifywait \
             filename=$(basename $f)
             extension="${filename##*.}"
             if [[ "c h" =~ $extension ]]; then
-                ./build.sh
+                ./build.sh $1
             fi
         done

@@ -5,4 +5,4 @@ if ! docker inspect strace-dev &> /dev/null ; then
     docker build -t strace-dev -f Dockerfile.dev .
 fi
 
-docker run --rm -v $PWD:/strace -w /strace strace-dev make
+docker run --rm -v $1:/strace -w /strace strace-dev make
