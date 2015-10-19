@@ -1,4 +1,5 @@
 #pragma once
 
-void show_syscall_invocation(pid_t pid);
-void show_syscall_return_value(pid_t pid);
+void output_invocation(long syscall_id);
+void output_return_value(long value, long syscall_id);
+void output_unknown_return_value();

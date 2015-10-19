@@ -1,28 +1,39 @@
+#define _GNU_SOURCE /* Enabling asprintf */
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
-#include <sys/ptrace.h>
-#include <sys/reg.h>
-
 #include "error.h"
+#include "syscall.h"
 
-void show_syscall_invocation(pid_t pid)
+void output_invocation(long syscall_id)
 {
-    long syscall_id;
+    char *invocation_str;
+    const syscall_info *info;
 
-    syscall_id = ptrace(PTRACE_PEEKUSER, pid, sizeof(long) * ORIG_RAX, NULL);
-    if (syscall_id == -1 && errno)
-        fatal(ERR_PTRACE_PEEKUSER);
-    fprintf(stderr, "syscall %ld", syscall_id);
+    info = get_syscall_info(syscall_id);
+    if (info)
+        asprintf(&invocation_str, "%s()", info->name);
+    else
+        asprintf(&invocation_str, "unknown syscall (%ld)", syscall_id);
+
+    fprintf(stderr, "%-39s", invocation_str);
+    free(invocation_str);
 }
 
-void show_syscall_return_value(pid_t pid)
+void output_return_value(long value, long syscall_id)
 {
-    long return_value;
+    if (value < 0)
+        fprintf(stderr, " = -1 (%s)", strerror(-value)); /* TODO: show ERRNO */
+    else {
+        (void)syscall_id; /* TODO: Display according to info->return_type */
+        fprintf(stderr, " = %ld", value);
+    }
+    fprintf(stderr, "\n");
+}
 
-    return_value = ptrace(PTRACE_PEEKUSER, pid, sizeof(long) * RAX, NULL);
-    if (return_value == -1 && errno)
-        fatal(ERR_PTRACE_PEEKUSER);
-    fprintf(stderr, " = %ld\n", return_value);
+void output_unknown_return_value()
+{
+    fprintf(stderr, " = ?\n");
 }

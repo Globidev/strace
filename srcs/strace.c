@@ -1,17 +1,30 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 
+#include <sys/ptrace.h>
+#include <sys/reg.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include <sys/ptrace.h>
-
 #include "strace.h"
+#include "syscall.h"
 #include "path.h"
 #include "log.h"
 #include "error.h"
 
 extern char **environ;
+
+static long peek_user(pid_t pid, long offset)
+{
+    long data;
+
+    data = ptrace(PTRACE_PEEKUSER, pid, sizeof(long) * offset, NULL);
+    if (data == -1 && errno)
+        fatal(ERR_PTRACE_PEEKUSER);
+
+    return (data);
+}
 
 static int wait_for_syscall_trap(pid_t pid, int *status)
 {
@@ -32,10 +45,12 @@ static int wait_for_syscall_trap(pid_t pid, int *status)
     }
 }
 
-int trace_process(pid_t pid)
+static int trace_process(pid_t pid)
 {
     int last_status;
     int exit_code;
+    long syscall_id;
+    long ret_val;
 
     /* Become a tracer */
     if (ptrace(PTRACE_SEIZE, pid, NULL, PTRACE_OPTIONS))
@@ -45,15 +60,19 @@ int trace_process(pid_t pid)
         /* First trap: before effectively executing the syscall */
         if (wait_for_syscall_trap(pid, &last_status))
             break ;
-        else
-            show_syscall_invocation(pid);
-        /* Second trap: after the syscall has been executed */
-        if (wait_for_syscall_trap(pid, &last_status)) {
-            fprintf(stderr, " = ?\n"); /* Too late to peek the return value */
-            break ;
+        else {
+            syscall_id = peek_user(pid, ORIG_RAX);
+            output_invocation(syscall_id);
+            /* Second trap: after the syscall has been executed */
+            if (wait_for_syscall_trap(pid, &last_status)) {
+                output_unknown_return_value(); /* Too late to peek the value */
+                break ;
+            }
+            else {
+                ret_val = peek_user(pid, RAX);
+                output_return_value(ret_val, syscall_id);
+            }
         }
-        else
-            show_syscall_return_value(pid);
     }
 
     exit_code = WEXITSTATUS(last_status);
