@@ -3,10 +3,10 @@
 #include "syscall.h"
 
 const syscall_info SYSCALLS[] = {
-    { "read", 3, long_ },
-    { "write", 3, long_ },
-    { "open", 2, int_ },
-    { "close", 1, int_ },
+    { "read",  long_, 3, { int_,    pointer_, long_ } },
+    { "write", long_, 3, { int_,    pointer_, long_ } },
+    { "open",  int_,  2, { string_, int_            } },
+    { "close", int_,  1, { int_                     } },
 };
 
 const syscall_info *get_syscall_info(long syscall_id)

@@ -1,18 +1,22 @@
 #pragma once
 
-enum e_return_type
+enum e_type
 {
     int_,
     long_,
     pointer_,
+    string_,
+    array_,
 };
-typedef enum e_return_type return_type;
+typedef enum e_type type;
 
+#define MAX_ARGS 4
 struct s_syscall_info
 {
     const char *name;
+    type return_type;
     unsigned arg_count;
-    return_type return_type;
+    type args_type[MAX_ARGS];
 };
 typedef struct s_syscall_info syscall_info;
 
