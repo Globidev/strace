@@ -26,6 +26,20 @@ static long peek_user(pid_t pid, long offset)
     return (data);
 }
 
+static void peek_args(pid_t pid, long *args)
+{
+    static long REGS[MAX_ARGS] = {
+        RDI,
+        RSI,
+        RDX,
+        RCX,
+    };
+    int i;
+
+    for (i = 0; i < MAX_ARGS; ++i)
+        args[i] = peek_user(pid, REGS[i]);
+}
+
 static int wait_for_syscall_trap(pid_t pid, int *status)
 {
     int sig_num;
@@ -51,6 +65,7 @@ static int trace_process(pid_t pid)
     int exit_code;
     long syscall_id;
     long ret_val;
+    long args[MAX_ARGS];
 
     /* Become a tracer */
     if (ptrace(PTRACE_SEIZE, pid, NULL, PTRACE_OPTIONS))
@@ -62,7 +77,8 @@ static int trace_process(pid_t pid)
             break ;
         else {
             syscall_id = peek_user(pid, ORIG_RAX);
-            output_invocation(syscall_id);
+            peek_args(pid, args);
+            output_invocation(syscall_id, args);
             /* Second trap: after the syscall has been executed */
             if (wait_for_syscall_trap(pid, &last_status)) {
                 output_unknown_return_value(); /* Too late to peek the value */

@@ -1,25 +1,37 @@
-#define _GNU_SOURCE /* Enabling asprintf */
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
 #include "error.h"
 #include "syscall.h"
 
-void output_invocation(long syscall_id)
+void output_invocation(long syscall_id, long *args)
 {
-    char *invocation_str;
+    char invocation_str[256];
     const syscall_info *info;
+    int written;
+    unsigned i;
 
     info = get_syscall_info(syscall_id);
-    if (info)
-        asprintf(&invocation_str, "%s()", info->name);
+    if (info) {
+        written = 0;
+        written = snprintf(invocation_str, 256, "%s(", info->name);
+        for (i = 0; i < info->arg_count; ++i) {
+            switch (info->args_type[i]) {
+                case int_:     written += snprintf(invocation_str + written, 256 - written, "%d, ", (int)args[i]); break;
+                case long_:    written += snprintf(invocation_str + written, 256 - written, "%ld, ", args[i]); break;
+                case pointer_: written += snprintf(invocation_str + written, 256 - written, "%p, ", (void *)args[i]); break;
+                case string_:  written += snprintf(invocation_str + written, 256 - written, "%p, ", (void *)args[i]); break; // TODO
+                case array_:   written += snprintf(invocation_str + written, 256 - written, "[...]"); break; // TODO
+                default: break;
+            }
+        }
+        snprintf(invocation_str + written - 2, 256 - written, ")");
+    }
     else
-        asprintf(&invocation_str, "unknown syscall (%ld)", syscall_id);
+        snprintf(invocation_str, 256, "unknown syscall (%ld)", syscall_id);
 
     fprintf(stderr, "%-39s", invocation_str);
-    free(invocation_str);
 }
 
 void output_return_value(long value, long syscall_id)
