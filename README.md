@@ -10,7 +10,7 @@ With docker:
 ```sh
 docker build -t strace-watch -f Dockerfile.watch .
 docker run \
-    --detached \
+    --detach \
     --name strace-watch \
     -v $PWD:/strace \
     -v /var/run/docker.sock:/var/run/docker.sock \
