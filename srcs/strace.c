@@ -64,8 +64,8 @@ static int trace_process(pid_t pid)
     int last_status;
     int exit_code;
     long syscall_id;
+    syscall_arg args[MAX_ARGS];
     long ret_val;
-    long args[MAX_ARGS];
 
     /* Become a tracer */
     if (ptrace(PTRACE_SEIZE, pid, NULL, PTRACE_OPTIONS))

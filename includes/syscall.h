@@ -19,6 +19,7 @@ struct s_syscall_info
     type args_type[MAX_ARGS];
 };
 typedef struct s_syscall_info syscall_info;
+typedef void * syscall_arg;
 
 #define SYSCALLS_INFO_COUNT 4
 const syscall_info SYSCALLS[SYSCALLS_INFO_COUNT];
