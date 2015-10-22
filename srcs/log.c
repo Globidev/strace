@@ -5,7 +5,7 @@
 #include "error.h"
 #include "syscall.h"
 
-void output_invocation(long syscall_id, long *args)
+void output_invocation(long syscall_id, syscall_arg *args)
 {
     char invocation_str[256];
     const syscall_info *info;
@@ -18,10 +18,10 @@ void output_invocation(long syscall_id, long *args)
         written = snprintf(invocation_str, 256, "%s(", info->name);
         for (i = 0; i < info->arg_count; ++i) {
             switch (info->args_type[i]) {
-                case int_:     written += snprintf(invocation_str + written, 256 - written, "%d, ", (int)args[i]); break;
-                case long_:    written += snprintf(invocation_str + written, 256 - written, "%ld, ", args[i]); break;
+                case int_:     written += snprintf(invocation_str + written, 256 - written, "%d, ", (int)(long)args[i]); break;
+                case long_:    written += snprintf(invocation_str + written, 256 - written, "%ld, ",(long)args[i]); break;
                 case pointer_: written += snprintf(invocation_str + written, 256 - written, "%p, ", (void *)args[i]); break;
-                case string_:  written += snprintf(invocation_str + written, 256 - written, "%p, ", (void *)args[i]); break; // TODO
+                case string_:  written += snprintf(invocation_str + written, 256 - written, "%s, ", (char *)args[i]); break; // TODO
                 case array_:   written += snprintf(invocation_str + written, 256 - written, "[...]"); break; // TODO
                 default: break;
             }
