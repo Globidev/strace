@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <stdio.h>
-#include <errno.h>
 
 #include <sys/ptrace.h>
 #include <sys/reg.h>
@@ -9,36 +8,12 @@
 
 #include "strace.h"
 #include "syscall.h"
+#include "peek.h"
 #include "path.h"
 #include "log.h"
 #include "error.h"
 
 extern char **environ;
-
-static long peek_user(pid_t pid, long offset)
-{
-    long data;
-
-    data = ptrace(PTRACE_PEEKUSER, pid, sizeof(long) * offset, NULL);
-    if (data == -1 && errno)
-        fatal(ERR_PTRACE_PEEKUSER);
-
-    return (data);
-}
-
-static void peek_args(pid_t pid, long *args)
-{
-    static long REGS[MAX_ARGS] = {
-        RDI,
-        RSI,
-        RDX,
-        RCX,
-    };
-    int i;
-
-    for (i = 0; i < MAX_ARGS; ++i)
-        args[i] = peek_user(pid, REGS[i]);
-}
 
 static int wait_for_syscall_trap(pid_t pid, int *status)
 {
@@ -77,7 +52,7 @@ static int trace_process(pid_t pid)
             break ;
         else {
             syscall_id = peek_user(pid, ORIG_RAX);
-            peek_args(pid, args);
+            peek_args(pid, syscall_id, args);
             output_invocation(syscall_id, args);
             /* Second trap: after the syscall has been executed */
             if (wait_for_syscall_trap(pid, &last_status)) {
