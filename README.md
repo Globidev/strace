@@ -7,6 +7,7 @@ With docker:
 ./build.sh $PWD
 ```
 ## Development
+Still with docker:
 ```sh
 docker build -t strace-watch -f Dockerfile.watch .
 docker run \
