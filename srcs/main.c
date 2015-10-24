@@ -5,7 +5,7 @@
 
 static void show_usage()
 {
-    printf("usage: %s PROG [ARGS]\n", PROGRAM_NAME);
+    fprintf(stderr, "usage: %s PROG [ARGS]\n", PROGRAM_NAME);
 }
 
 int main(int argc, char **argv)
