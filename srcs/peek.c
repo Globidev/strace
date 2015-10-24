@@ -6,6 +6,7 @@
 #include <sys/reg.h>
 
 #include "syscall.h"
+#include "peek.h"
 #include "error.h"
 
 long peek_user(pid_t pid, long offset)
@@ -19,7 +20,7 @@ long peek_user(pid_t pid, long offset)
     return (data);
 }
 
-long peek_data(pid_t pid, long offset)
+static long peek_data(pid_t pid, long offset)
 {
     long data;
 
@@ -30,21 +31,33 @@ long peek_data(pid_t pid, long offset)
     return (data);
 }
 
+static int null_byes_in_word(long word)
+{
+    static long low_magic = 0x0101010101010101L;
+    static long high_magic = 0x8080808080808080L;
+
+    return (((word - low_magic) & ~word & high_magic) != 0);
+}
+
 static char *peek_string(pid_t pid, long offset)
 {
     long addr;
     long data;
     char *string;
-    int i;
+    unsigned i;
+    int next;
 
     addr = peek_user(pid, offset);
-    string = (char *)malloc(sizeof(char) * 256);
+    string = (char *)malloc(sizeof(char) * (STRING_PEEK_MAX_SIZE + 1));
+    string[STRING_PEEK_MAX_SIZE] = '\0';
     i = 0;
     do {
         data = peek_data(pid, addr + i);
         memcpy(string + i, &data, sizeof(long));
         i += sizeof(long);
-    } while (data && i < 256);
+        next = i < STRING_PEEK_MAX_SIZE;
+        next &= !null_byes_in_word(data);
+    } while (next);
 
     return (string);
 }
