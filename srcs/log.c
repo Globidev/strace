@@ -7,7 +7,7 @@
 #include "peek.h"
 #include "syscall.h"
 
-#define MAX_LINE_SIZE 256
+#define MAX_LINE_SIZE 4096
 #define MIN_PADDING 40
 #define PLACEHOLDER_TEXT "Unknown syscall"
 
@@ -25,6 +25,34 @@ static void str_write(char *str, int *written, const char *format, ...)
         );
     }
     va_end(args);
+}
+
+static void write_string(char *out, int *written, char *str)
+{
+    str_write(
+        out,
+        written,
+        "\"%s\"%s, ",
+        str, // TODO: escape
+        str[STRING_PEEK_MAX_SIZE - 1] && strlen(str) == STRING_PEEK_MAX_SIZE ? "..." : ""
+    );
+    free(str);
+}
+
+static void write_array(char *out, int *written, char **array)
+{
+    unsigned i;
+
+    str_write(out, written, "[");
+    if (*array) {
+        write_string(out, written, *array);
+        for (i = 1; array[i]; ++i) {
+            str_write(out, written, ", ");
+            write_string(out, written, array[i]);
+        }
+    }
+    str_write(out, written, "]");
+    free(array);
 }
 
 void output_invocation(long syscall_id, syscall_arg *args)
@@ -55,20 +83,15 @@ void output_invocation(long syscall_id, syscall_arg *args)
                     str_write(str, &written, "%p, ", args[i]);
                     break;
                 case string_:
-                    str_write(
-                        str,
-                        &written,
-                        "\"%s\"%s, ",
-                        (char *)args[i], // TODO: escape
-                        ((char *)args[i])[STRING_PEEK_MAX_SIZE - 1] ? "..." : ""
-                    );
+                    write_string(str, &written, args[i]);
                     break;
                 case array_:
-                    str_write(str, &written, "[...], "); // TODO
+                    write_array(str, &written, args[i]);
                     break;
                 default: break;
             }
         }
+        written = written > MAX_LINE_SIZE ? MAX_LINE_SIZE : written;
         if (info->arg_count)
             written -= 2; // trick to erease the extra commas
         snprintf(str + written, MAX_LINE_SIZE - written, ")");

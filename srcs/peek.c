@@ -39,17 +39,15 @@ static int null_byes_in_word(long word)
     return (((word - low_magic) & ~word & high_magic) != 0);
 }
 
-static char *peek_string(pid_t pid, long offset)
+static char *peek_string(pid_t pid, long addr)
 {
-    long addr;
     long data;
     char *string;
     unsigned i;
     int next;
 
-    addr = peek_user(pid, offset);
     string = (char *)malloc(sizeof(char) * (STRING_PEEK_MAX_SIZE + 1));
-    string[STRING_PEEK_MAX_SIZE] = '\0';
+    bzero(string, STRING_PEEK_MAX_SIZE + 1);
     i = 0;
     do {
         data = peek_data(pid, addr + i);
@@ -84,9 +82,7 @@ static char **peek_array(pid_t pid, long addr)
 
 void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
 {
-    static long REGS[MAX_ARGS] = {
-        RDI, RSI, RDX, RCX, R8, R9
-    };
+    static long REGS[MAX_ARGS] = { RDI, RSI, RDX, RCX, R8, R9 };
     const syscall_info *info;
     unsigned i;
     long data;
@@ -101,10 +97,10 @@ void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
                 case long_:
                 case ulong_:
                 case pointer_:
-                    args[i] = (void *)peek_user(pid, REGS[i]);
+                    args[i] = (void *)data;
                     break ;
                 case string_:
-                    args[i] = (void *)peek_string(pid, REGS[i]);
+                    args[i] = (void *)peek_string(pid, data);
                     break ;
                 case array_:
                     args[i] = (void *)peek_array(pid, data);
