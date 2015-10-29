@@ -65,7 +65,7 @@ static char *peek_string(pid_t pid, long offset)
 void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
 {
     static long REGS[MAX_ARGS] = {
-        RDI, RSI, RDX, RCX,
+        RDI, RSI, RDX, RCX, R8, R9
     };
     const syscall_info *info;
     unsigned i;

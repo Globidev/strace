@@ -12,7 +12,7 @@ enum e_type
 };
 typedef enum e_type type;
 
-#define MAX_ARGS 4
+#define MAX_ARGS 6
 struct s_syscall_info
 {
     const char *name;
