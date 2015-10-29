@@ -23,7 +23,7 @@ struct s_syscall_info
 typedef struct s_syscall_info syscall_info;
 typedef void * syscall_arg;
 
-#define SYSCALLS_INFO_COUNT 4
+#define SYSCALLS_INFO_COUNT 314
 const syscall_info SYSCALLS[SYSCALLS_INFO_COUNT];
 
 const syscall_info *get_syscall_info(long syscall_id);
