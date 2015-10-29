@@ -62,6 +62,26 @@ static char *peek_string(pid_t pid, long offset)
     return (string);
 }
 
+static char **peek_array(pid_t pid, long addr)
+{
+    long data;
+    char **array;
+    unsigned i;
+    int next;
+
+    array = (char **)malloc(sizeof(char *) * 256);
+    i = 0;
+    do {
+        data = peek_data(pid, addr + i * sizeof(long));
+        array[i] = data ? peek_string(pid, data) : NULL;
+        ++i;
+        next = (data != 0);
+        next &= (i < 256);
+    } while (next);
+
+    return (array);
+}
+
 void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
 {
     static long REGS[MAX_ARGS] = {
@@ -69,10 +89,12 @@ void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
     };
     const syscall_info *info;
     unsigned i;
+    long data;
 
     info = get_syscall_info(syscall_id);
     if (info) {
         for (i = 0; i < info->arg_count; ++i) {
+            data = peek_user(pid, REGS[i]);
             switch (info->args_type[i]) {
                 case int_:
                 case uint_:
@@ -84,8 +106,8 @@ void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
                 case string_:
                     args[i] = (void *)peek_string(pid, REGS[i]);
                     break ;
-                case array_: // TODO
-                    args[i] = (void *)peek_user(pid, REGS[i]);
+                case array_:
+                    args[i] = (void *)peek_array(pid, data);
                     break ;
                 default:
                     break ;
