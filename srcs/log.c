@@ -64,7 +64,7 @@ void output_invocation(long syscall_id, syscall_arg *args)
                     );
                     break;
                 case array_:
-                    str_write(str, &written, "[...]"); // TODO
+                    str_write(str, &written, "[...], "); // TODO
                     break;
                 default: break;
             }

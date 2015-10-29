@@ -84,6 +84,9 @@ void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
                 case string_:
                     args[i] = (void *)peek_string(pid, REGS[i]);
                     break ;
+                case array_: // TODO
+                    args[i] = (void *)peek_user(pid, REGS[i]);
+                    break ;
                 default:
                     break ;
             }
