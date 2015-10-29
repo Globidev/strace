@@ -75,7 +75,9 @@ void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
         for (i = 0; i < info->arg_count; ++i) {
             switch (info->args_type[i]) {
                 case int_:
+                case uint_:
                 case long_:
+                case ulong_:
                 case pointer_:
                     args[i] = (void *)peek_user(pid, REGS[i]);
                     break ;

@@ -42,8 +42,14 @@ void output_invocation(long syscall_id, syscall_arg *args)
                 case int_:
                     str_write(str, &written, "%d, ", (int)(long)args[i]);
                     break ;
+                case uint_:
+                    str_write(str, &written, "%u, ", (unsigned)(long)args[i]);
+                    break ;
                 case long_:
                     str_write(str, &written, "%ld, ", (long)args[i]);
+                    break ;
+                case ulong_:
+                    str_write(str, &written, "%lu, ", (unsigned long)args[i]);
                     break ;
                 case pointer_:
                     str_write(str, &written, "%p, ", args[i]);

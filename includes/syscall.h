@@ -3,7 +3,9 @@
 enum e_type
 {
     int_,
+    uint_,
     long_,
+    ulong_,
     pointer_,
     string_,
     array_,
