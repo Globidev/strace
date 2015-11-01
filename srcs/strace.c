@@ -15,22 +15,24 @@
 
 extern char **environ;
 
-static int wait_for_syscall_trap(pid_t pid, int *status)
+static trap_t next_trap(pid_t pid, int *status)
 {
     int sig_num;
 
     for (;;) {
         (void)ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         if (waitpid(pid, status, 0) == -1)
-            return (1);
+            return (exit_); /* Assuming the child exited */
 
         if (WIFSTOPPED(*status)) {
             sig_num = WSTOPSIG(*status);
-            if (sig_num & SYSCALL_TRAP_MASK)
-                return (0);
+            if (sig_num & SYSCALL_TRAP_MASK) /* Caught a syscall */
+                return (syscall_);
+            else /* Caught a signal */
+                return (signal_);
         }
         else if (WIFEXITED(status))
-            return (1);
+            return (exit_);
     }
 }
 
