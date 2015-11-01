@@ -23,7 +23,7 @@ static trap_t next_trap(pid_t pid, int *status)
     for (;;) {
         (void)ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
         if (waitpid(pid, status, 0) == -1)
-            return (exit_); /* Assuming the child exited */
+            fatal(ERR_WAITPID);
 
         if (WIFSTOPPED(*status)) {
             sig_num = WSTOPSIG(*status);
