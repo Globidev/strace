@@ -37,34 +37,57 @@ static trap_t next_trap(pid_t pid, int *status)
 }
 
 static int trace_process(pid_t pid)
+static int syscall_trap(pid_t pid, int *status)
 {
-    int last_status;
-    int exit_code;
     long syscall_id;
     syscall_arg args[MAX_ARGS];
     long ret_val;
+    trap_t trap;
+
+    /* First trap: before effectively executing the syscall */
+    syscall_id = peek_user(pid, ORIG_RAX);
+    peek_args(pid, syscall_id, args);
+    output_invocation(syscall_id, args);
+
+    trap = next_trap(pid, status);
+    if (trap == exit_) {
+        output_unknown_return_value(); /* Too late to peek the value */
+        return (1);
+    }
+    /* Second trap: after the syscall has been executed */
+    else if (trap == syscall_) {
+        ret_val = peek_user(pid, RAX);
+        output_return_value(ret_val, syscall_id);
+        return (0);
+    }
+    else if (trap == signal_)
+        return (signal_trap(pid, status));
+
+    return (0);
+}
+
+static int trace_process(pid_t pid)
+{
+    int last_status;
+    int exit_code;
+    trap_t trap;
 
     /* Become a tracer */
     if (ptrace(PTRACE_SEIZE, pid, NULL, PTRACE_OPTIONS))
         fatal(ERR_PTRACE_SEIZE);
     /* Trace until exited */
     for (;;) {
-        /* First trap: before effectively executing the syscall */
-        if (wait_for_syscall_trap(pid, &last_status))
+        /* Waiting for a trap */
+        trap = next_trap(pid, &last_status);
+        if (trap == exit_)
             break ;
-        else {
-            syscall_id = peek_user(pid, ORIG_RAX);
-            peek_args(pid, syscall_id, args);
-            output_invocation(syscall_id, args);
-            /* Second trap: after the syscall has been executed */
-            if (wait_for_syscall_trap(pid, &last_status)) {
-                output_unknown_return_value(); /* Too late to peek the value */
+        else if (trap == syscall_) {
+            if (syscall_trap(pid, &last_status))
                 break ;
-            }
-            else {
-                ret_val = peek_user(pid, RAX);
-                output_return_value(ret_val, syscall_id);
-            }
+        }
+        else if (trap == signal_) {
+            if (signal_trap(pid, &last_status))
+                break ;
         }
     }
 
