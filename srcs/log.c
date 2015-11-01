@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "error.h"
 #include "peek.h"
@@ -116,4 +117,18 @@ void output_return_value(long value, long syscall_id)
 void output_unknown_return_value()
 {
     fprintf(stderr, " = ?\n");
+}
+
+#define SIGINFO_OUTPUT_FORMAT "--- %s {si_signo=%d, si_code=%d, si_pid=%d, si_uid=%d} ---\n"
+void output_signal(const siginfo_t *siginfo)
+{
+    fprintf(
+        stderr,
+        SIGINFO_OUTPUT_FORMAT,
+        "SIGNAME", /* TODO */
+        siginfo->si_signo, /* TODO: Name */
+        siginfo->si_code, /* TODO: Name */
+        siginfo->si_pid,
+        siginfo->si_uid
+    );
 }
