@@ -31,7 +31,7 @@ static trap_t next_trap(pid_t pid, int *status)
             else /* Caught a signal */
                 return (signal_);
         }
-        else if (WIFEXITED(status))
+        if (WIFEXITED(status) || WIFSIGNALED(status))
             return (exit_);
     }
 }
