@@ -8,5 +8,6 @@
 #define ERR_PTRACE_SEIZE "PTRACE_SEIZE failed"
 #define ERR_PTRACE_PEEKUSER "PTRACE_PEEKUSER failed"
 #define ERR_PTRACE_PEEKDATA "PTRACE_PEEKDATA failed"
+#define ERR_PTRACE_GETSIGINFO "PTRACE_GETSIGINFO failed"
 
 void fatal(const char *error);

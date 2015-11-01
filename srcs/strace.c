@@ -36,7 +36,18 @@ static trap_t next_trap(pid_t pid, int *status)
     }
 }
 
-static int trace_process(pid_t pid)
+static int signal_trap(pid_t pid, int *status)
+{
+    siginfo_t siginfo;
+
+    if (ptrace(PTRACE_GETSIGINFO, pid, NULL, &siginfo))
+        fatal(ERR_PTRACE_GETSIGINFO);
+
+    output_signal(&siginfo);
+    (void)status;
+    return 0;
+}
+
 static int syscall_trap(pid_t pid, int *status)
 {
     long syscall_id;
