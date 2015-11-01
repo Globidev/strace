@@ -11,6 +11,7 @@
 #include "peek.h"
 #include "path.h"
 #include "log.h"
+#include "tools.h"
 #include "error.h"
 
 extern char **environ;
@@ -102,7 +103,7 @@ static int trace_process(pid_t pid)
         }
     }
 
-    exit_code = WEXITSTATUS(last_status);
+    exit_code = get_exit_code(last_status);
     fprintf(stderr, EXIT_MESSAGE, exit_code);
     return (exit_code);
 }
