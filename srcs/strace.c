@@ -43,10 +43,23 @@ static int signal_trap(pid_t pid, int *status)
 
     if (ptrace(PTRACE_GETSIGINFO, pid, NULL, &siginfo))
         fatal(ERR_PTRACE_GETSIGINFO);
-
     output_signal(&siginfo);
-    (void)status;
-    return 0;
+
+    if (ptrace(PTRACE_CONT, pid, NULL, siginfo.si_signo))
+        fatal(ERR_PTRACE_CONT);
+    if (siginfo.si_signo == SIGSTOP) {
+        /* Here we need to wait for the SIGSTOP to be delivered */
+        if (waitpid(pid, status, WUNTRACED) == -1)
+            fatal(ERR_WAITPID);
+        /* Restarting the tracee but preventing it from executing */
+        if (ptrace(PTRACE_LISTEN, pid, NULL, NULL))
+            fatal(ERR_PTRACE_LISTEN);
+        /* Wating for a SIGCONT */
+        if (waitpid(pid, status, WCONTINUED) == -1)
+            fatal(ERR_WAITPID);
+    }
+
+    return (0);
 }
 
 static int syscall_trap(pid_t pid, int *status)
