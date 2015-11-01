@@ -127,8 +127,12 @@ int strace(char **command)
         execve(program, command, environ);
         fatal(ERR_EXEC);
     }
-    else
+    else {
+        /* Waiting for the child to stop */
+        if (waitpid(pid, NULL, WUNTRACED) == -1)
+            fatal(ERR_WAITPID);
         exit_code = trace_process(pid);
+    }
 
     return (exit_code);
 }
