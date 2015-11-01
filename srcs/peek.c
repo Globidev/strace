@@ -7,6 +7,7 @@
 
 #include "syscall.h"
 #include "peek.h"
+#include "tools.h"
 #include "error.h"
 
 long peek_user(pid_t pid, long offset)
@@ -29,14 +30,6 @@ static long peek_data(pid_t pid, long offset)
         fatal(ERR_PTRACE_PEEKDATA);
 
     return (data);
-}
-
-static int null_byes_in_word(long word)
-{
-    static long low_magic = 0x0101010101010101L;
-    static long high_magic = 0x8080808080808080L;
-
-    return (((word - low_magic) & ~word & high_magic) != 0);
 }
 
 static char *peek_string(pid_t pid, long addr)
