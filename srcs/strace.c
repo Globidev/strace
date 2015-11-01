@@ -59,7 +59,7 @@ static int signal_trap(pid_t pid, int *status)
             fatal(ERR_WAITPID);
     }
 
-    return (0);
+    return (WIFEXITED(*status) || WIFSIGNALED(*status));
 }
 
 static int syscall_trap(pid_t pid, int *status)
