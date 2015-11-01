@@ -8,3 +8,11 @@
 #define EXIT_MESSAGE "+++ exited with %d +++\n"
 
 int strace(char **command);
+
+enum e_trap
+{
+    syscall_,
+    signal_,
+    exit_,
+};
+typedef enum e_trap trap_t;
