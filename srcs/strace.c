@@ -46,8 +46,10 @@ static int signal_trap(pid_t pid, int *status)
     if (siginfo.si_signo != SIGTRAP) /* Ignoring our own traps */
         output_signal(&siginfo);
 
-    if (ptrace(PTRACE_CONT, pid, NULL, siginfo.si_signo))
-        fatal(ERR_PTRACE_CONT);
+    if (siginfo.si_signo != SIGCONT) {
+        if (ptrace(PTRACE_CONT, pid, NULL, siginfo.si_signo))
+            fatal(ERR_PTRACE_CONT);
+    }
     if (siginfo.si_signo == SIGSTOP) {
         /* Here we need to wait for the SIGSTOP to be delivered */
         if (waitpid(pid, status, WUNTRACED) == -1)
