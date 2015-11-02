@@ -86,7 +86,6 @@ static int syscall_trap(pid_t pid, int *status)
     else if (trap == syscall_) {
         ret_val = peek_user(pid, RAX);
         output_return_value(ret_val, syscall_id);
-        return (0);
     }
     else if (trap == signal_)
         return (signal_trap(pid, status));
