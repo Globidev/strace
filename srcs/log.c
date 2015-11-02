@@ -10,6 +10,7 @@
 #include "peek.h"
 #include "syscall.h"
 #include "signals.h"
+#include "errno_.h"
 
 #define MAX_LINE_SIZE 4096
 #define MIN_PADDING 40
@@ -108,8 +109,16 @@ void output_invocation(long syscall_id, syscall_arg *args)
 
 void output_return_value(long value, long syscall_id)
 {
-    if (value < 0)
-        fprintf(stderr, " = -1 (%s)", strerror(-value)); /* TODO: show ERRNO */
+    if (value < 0) {
+        if (-value < ERANGE)
+            fprintf(
+                stderr, " = -1 %s (%s)",
+                ERRNO_NAMES[-value],
+                strerror(-value)
+            );
+        else
+            fprintf(stderr, " = -1 (%s)", strerror(-value)); /* Unknown ERRNO */
+    }
     else {
         (void)syscall_id; /* TODO: Display according to info->return_type */
         fprintf(stderr, " = %ld", value);
