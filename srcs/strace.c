@@ -43,7 +43,8 @@ static int signal_trap(pid_t pid, int *status)
 
     if (ptrace(PTRACE_GETSIGINFO, pid, NULL, &siginfo))
         fatal(ERR_PTRACE_GETSIGINFO);
-    if (siginfo.si_signo != SIGTRAP) /* Ignoring our own traps */
+    /* Ignoring our own traps */
+    if (!(siginfo.si_signo == SIGTRAP && siginfo.si_pid == pid))
         output_signal(&siginfo);
 
     if (siginfo.si_signo != SIGCONT) {
