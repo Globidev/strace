@@ -9,6 +9,7 @@
 #include "log.h"
 #include "peek.h"
 #include "syscall.h"
+#include "signals.h"
 
 #define MAX_LINE_SIZE 4096
 #define MIN_PADDING 40
@@ -127,9 +128,9 @@ void output_signal(const siginfo_t *siginfo)
     fprintf(
         stderr,
         SIGINFO_OUTPUT_FORMAT,
-        "SIGNAME", /* TODO */
-        siginfo->si_signo, /* TODO: Name */
-        siginfo->si_code, /* TODO: Name */
+        SIGNAMES[siginfo->si_signo],
+        siginfo->si_signo,
+        siginfo->si_code,
         siginfo->si_pid,
         siginfo->si_uid
     );
