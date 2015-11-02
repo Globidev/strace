@@ -3,8 +3,10 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "error.h"
+#include "log.h"
 #include "peek.h"
 #include "syscall.h"
 
@@ -131,4 +133,19 @@ void output_signal(const siginfo_t *siginfo)
         siginfo->si_pid,
         siginfo->si_uid
     );
+}
+
+void output_exit(int status, int exit_code)
+{
+    const char *signame;
+
+    if (WIFEXITED(status))
+        fprintf(stderr, EXIT_MESSAGE, exit_code);
+    else if (WIFSIGNALED(status)) {
+        signame = SIGNAMES[WTERMSIG(status)];
+        if (WCOREDUMP(status))
+            fprintf(stderr, KILLED_AND_DUMPED_MESSAGE, signame);
+        else
+            fprintf(stderr, KILLED_MESSAGE, signame);
+    }
 }

@@ -120,7 +120,7 @@ static int trace_process(pid_t pid)
     }
 
     exit_code = get_exit_code(last_status);
-    fprintf(stderr, EXIT_MESSAGE, exit_code);
+    output_exit(last_status, exit_code);
     return (exit_code);
 }
 
