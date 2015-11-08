@@ -44,8 +44,12 @@ char *resolve_program_path(const char *program)
     char *env_path;
     char *path;
 
-    if (should_skip_path_search(program))
-        path = strdup(program);
+    if (should_skip_path_search(program)) {
+        if (access(program, F_OK) == 0)
+            path = strdup(program);
+        else
+            path = NULL;
+    }
     else {
         env_path = getenv(ENV_PATH);
         if (!env_path) /* No path variable */
