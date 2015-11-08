@@ -68,10 +68,11 @@ static int signal_trap(pid_t pid, int *status)
 
 static int syscall_trap(pid_t pid, int *status)
 {
-    long syscall_id;
+    long syscall_id, ret_val;
     syscall_arg args[MAX_ARGS];
-    long ret_val;
     trap_t trap;
+    const syscall_info *info;
+    void *value;
 
     /* First trap: before effectively executing the syscall */
     syscall_id = peek_user(pid, ORIG_RAX);
@@ -86,7 +87,9 @@ static int syscall_trap(pid_t pid, int *status)
     /* Second trap: after the syscall has been executed */
     else if (trap == syscall_) {
         ret_val = peek_user(pid, RAX);
-        output_return_value(ret_val, syscall_id);
+        info = get_syscall_info(syscall_id);
+        value = (info ? peek_value(pid, info->return_type, ret_val) : NULL);
+        output_return_value(ret_val, syscall_id, value);
     }
     else if (trap == signal_)
         return (signal_trap(pid, status));

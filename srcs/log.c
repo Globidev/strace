@@ -39,23 +39,38 @@ void output_invocation(long syscall_id, syscall_arg *args)
     fprintf(stderr, "%-*s", MIN_PADDING - 1, str);
 }
 
-void output_return_value(long value, long syscall_id)
+void output_return_value(long value, long syscall_id, void *arg)
 {
+    char str[MAX_LINE_SIZE];
+    const syscall_info *info;
+    int written;
+    char *err;
+
     if (value < 0) {
+        err = strerror(-value);
         if (-value < ERANGE)
-            fprintf(
-                stderr, " = -1 %s (%s)",
+            written = snprintf(
+                str,
+                MAX_LINE_SIZE,
+                " = -1 %s (%s)",
                 ERRNO_NAMES[-value],
-                strerror(-value)
+                err
             );
-        else
-            fprintf(stderr, " = -1 (%s)", strerror(-value)); /* Unknown ERRNO */
+        else /* Unknown ERRNO */
+            written = snprintf(str, MAX_LINE_SIZE, " = -1 (%s)", err);
     }
     else {
-        (void)syscall_id; /* TODO: Display according to info->return_type */
-        fprintf(stderr, " = %ld", value);
+        info = get_syscall_info(syscall_id);
+        if (info) {
+            written = snprintf(str, MAX_LINE_SIZE, " = ");
+            write_arg(arg, info->return_type, str, &written);
+        }
+        else
+            written = snprintf(str, MAX_LINE_SIZE, " = %ld", value);
     }
-    fprintf(stderr, "\n");
+
+    snprintf(str + written, MAX_LINE_SIZE - written, "\n");
+    fprintf(stderr, str);
 }
 
 void output_unknown_return_value()
