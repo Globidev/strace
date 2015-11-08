@@ -1,5 +1,5 @@
 # Strace
-My implementation of strace for 42
+My implementation of a simple [strace](http://linux.die.net/man/1/strace) for [42](http://www.42.fr/)
 
 ## Building
 With docker:
@@ -7,6 +7,7 @@ With docker:
 ./build.sh $PWD
 ```
 ## Development
+### Auto-compile workflow
 Still with docker:
 ```sh
 docker build -t strace-watch -f Dockerfile.watch .
@@ -17,3 +18,13 @@ docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     strace-watch $PWD
 ```
+### Generating the syscall table
+Again with docker:
+```sh
+docker build -t strace-gen syscall_gen/
+docker run \
+    --rm \
+    -v $PWD/syscall_gen:/gen \
+    -v /usr/share/man/man2:/man2 \ #Or whatever path to your man2 pages
+    -w /gen \
+    strace-gen
