@@ -73,6 +73,32 @@ static char **peek_array(pid_t pid, long addr)
     return (array);
 }
 
+void *peek_value(pid_t pid, type value_type, long data)
+{
+    void *value;
+
+    switch (value_type) {
+        case int_:
+        case uint_:
+        case long_:
+        case ulong_:
+        case pointer_:
+            value = (void *)data;
+            break ;
+        case string_:
+            value = (void *)peek_string(pid, data);
+            break ;
+        case array_:
+            value = (void *)peek_array(pid, data);
+            break ;
+        default:
+            value = NULL;
+            break ;
+    }
+
+    return (value);
+}
+
 void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
 {
     static long REGS[MAX_ARGS] = { RDI, RSI, RDX, RCX, R8, R9 };
@@ -84,24 +110,7 @@ void peek_args(pid_t pid, long syscall_id, syscall_arg *args)
     if (info) {
         for (i = 0; i < info->arg_count; ++i) {
             data = peek_user(pid, REGS[i]);
-            switch (info->args_type[i]) {
-                case int_:
-                case uint_:
-                case long_:
-                case ulong_:
-                case pointer_:
-                    args[i] = (void *)data;
-                    break ;
-                case string_:
-                    args[i] = (void *)peek_string(pid, data);
-                    break ;
-                case array_:
-                    args[i] = (void *)peek_array(pid, data);
-                    break ;
-                default:
-                    break ;
-            }
-
+            args[i] = peek_value(pid, info->args_type[i], data);
         }
     }
 }

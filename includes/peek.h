@@ -7,4 +7,5 @@
 #define STRING_PEEK_MAX_SIZE 32
 
 long peek_user(pid_t pid, long offset);
+void *peek_value(pid_t pid, type value_type, long data);
 void peek_args(pid_t pid, long syscall_id, syscall_arg *args);
