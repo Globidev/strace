@@ -22,9 +22,10 @@ docker run \
 Again with docker:
 ```sh
 docker build -t strace-gen syscall_gen/
+MAN2_PATH="/usr/share/man/man2" # Or whatever path to your man2 pages
 docker run \
     --rm \
     -v $PWD/syscall_gen:/gen \
-    -v /usr/share/man/man2:/man2 \ #Or whatever path to your man2 pages
-    -w /gen \
+    -v $MAN2_PATH:/man2 \
     strace-gen
+```
