@@ -39,6 +39,8 @@ void output_invocation(long syscall_id, syscall_arg *args)
     fprintf(stderr, "%-*s", MIN_PADDING - 1, str);
 }
 
+#define RESTART_BLOCKED_ERRNO 516
+#define RESTART_BLOCKED_STR " = ? ERESTART_RESTARTBLOCK (Interrupted by signal)"
 void output_return_value(long value, long syscall_id, void *arg)
 {
     char str[MAX_LINE_SIZE];
@@ -56,6 +58,8 @@ void output_return_value(long value, long syscall_id, void *arg)
                 ERRNO_NAMES[-value],
                 err
             );
+        else if (-value == RESTART_BLOCKED_ERRNO) /* Special case */
+            written = snprintf(str, MAX_LINE_SIZE, RESTART_BLOCKED_STR);
         else /* Unknown ERRNO */
             written = snprintf(str, MAX_LINE_SIZE, " = -1 (%s)", err);
     }
