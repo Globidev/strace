@@ -124,6 +124,9 @@ static int trace_process(pid_t pid)
 
     exit_code = get_exit_code(last_status);
     output_exit(last_status, exit_code);
+    /* If terminated by a signal, we kill ourselves with that same signal */
+    if (WIFSIGNALED(last_status))
+        kill(getpid(), WTERMSIG(last_status));
     return (exit_code);
 }
 
