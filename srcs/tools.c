@@ -55,7 +55,7 @@ char *escape(const char *str)
                 }
             }
             if (!found)
-                written += sprintf(escaped + written, "\\%o", *str);
+                written += sprintf(escaped + written, "\\%o", (unsigned char)*str);
         }
     }
     escaped[written] = '\0';
