@@ -4,6 +4,7 @@
 
 #include "log.h"
 #include "peek.h"
+#include "tools.h"
 
 void str_printf(char *str, int *written, const char *format, ...)
 {
@@ -49,9 +50,10 @@ static void write_pointer(char *out, int *written, void *p)
 static void write_string(char *out, int *written, void *p_str)
 {
     int elide;
-    char *str;
+    char *str, *escaped;
 
     str = p_str;
+    escaped = escape(str);
     elide = (
         str[STRING_PEEK_MAX_SIZE - 1] &&
         strlen(str) == STRING_PEEK_MAX_SIZE
@@ -61,9 +63,11 @@ static void write_string(char *out, int *written, void *p_str)
         out,
         written,
         "\"%s\"%s",
-        str, // TODO: escape
+        escaped,
         elide ? "..." : ""
     );
+
+    free(escaped);
     free(str);
 }
 
