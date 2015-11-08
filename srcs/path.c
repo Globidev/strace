@@ -20,15 +20,17 @@ static int should_skip_path_search(const char *program)
 static char *find_in_path(const char *program, char *path)
 {
     char *prefix;
-    char *concatenated;
+    char *concatenated, *normalized;
 
     prefix = strtok(path, ENV_PATH_SEPARATOR);
     while (prefix) {
-        asprintf(&concatenated, "%s/%s", prefix, program); /* TODO: normalize */
-        if (access(concatenated, F_OK) == 0)
-            return (concatenated);
+        asprintf(&concatenated, "%s/%s", prefix, program);
+        normalized = realpath(concatenated, NULL); /* Normalizing */
+        free(concatenated);
+        if (access(normalized, F_OK) == 0)
+            return (normalized);
         else
-            free(concatenated);
+            free(normalized);
         prefix = strtok(NULL, ENV_PATH_SEPARATOR);
     }
 
