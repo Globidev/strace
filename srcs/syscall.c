@@ -15,7 +15,7 @@ const syscall_info SYSCALLS[] = {
     { "mmap", pointer_, 6, { ulong_, ulong_, ulong_, ulong_, ulong_, ulong_ } },
     { "mprotect", int_, 3, { ulong_, ulong_, ulong_ } },
     { "munmap", int_, 2, { ulong_, ulong_ } },
-    { "brk", int_, 1, { ulong_ } },
+    { "brk", pointer_, 1, { pointer_ } },
     { "rt_sigaction", long_, 4, { int_, pointer_, pointer_, ulong_ } },
     { "rt_sigprocmask", long_, 4, { int_, pointer_, pointer_, ulong_ } },
     { "rt_sigreturn", long_, 0, {  } },
