@@ -1,5 +1,7 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from gzip import GzipFile
+from os.path import join
 
 import sys
 
@@ -22,14 +24,19 @@ SYMBOLS = {
     'gid_t':            'uint_',
     'umode_t':          'uint_',
 
+    'void':             'long_', # Not handling voids in strace
     'long':             'long_',
     'off_t':            'long_',
     'loff_t':           'long_',
+    'ssize_t':          'long_',
 
     'unsigned long':    'ulong_',
     'u64':              'ulong_',
     'size_t':           'ulong_',
+    'time_t':           'ulong_',
     'timer_t':          'ulong_',
+    'caddr_t':          'ulong_',
+    'clock_t':          'ulong_',
     'mqd_t':            'ulong_',
     'aio_context_t':    'ulong_',
 
@@ -66,6 +73,26 @@ def type_to_sym(type):
         print('unmapped type: {} ({})'.format(stripped, type), file=sys.stderr)
         return UNKNOWN_SYM
 
+MAN2_PATH = '/man2'
+def fetch_return_type(name):
+    try:
+        with GzipFile(join(MAN2_PATH, '{}.2.gz'.format(name)), 'r') as gz:
+            lines = [
+                line.decode(sys.getdefaultencoding())
+                for line in gz.readlines()
+            ]
+            func_name = '{}('.format(name)
+            for line in lines:
+                if line.startswith('.BI') and func_name in line:
+                    name_idx = line.index(func_name)
+                    return line[len(".BI \""):name_idx].strip()
+    except IOError:
+        pass
+    except UnicodeDecodeError:
+        pass
+
+    return 'long' # Defaulting to long
+
 with urlopen(DATABASE_URL) as response:
     html = response.read()
     soup = BeautifulSoup(html, 'html.parser')
@@ -75,7 +102,7 @@ with urlopen(DATABASE_URL) as response:
     for entry in entries:
         defines = entry.find_all('td')
         name = defines[1].string
-        return_type = 'long' # Cannot think of a clean way to fetch this info
+        return_type = fetch_return_type(name)
         args_row = entry.next_sibling
         args = []
         if 'tbls-arguments-collapsed' in args_row.attrs.get('class'):
