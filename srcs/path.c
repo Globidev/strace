@@ -26,6 +26,8 @@ static char *find_in_path(const char *program, char *path)
     while (prefix) {
         asprintf(&concatenated, "%s/%s", prefix, program);
         normalized = realpath(concatenated, NULL); /* Normalizing */
+        if (!normalized)
+            normalized = strdup(concatenated); /* Fallback for access */
         free(concatenated);
         if (access(normalized, F_OK) == 0)
             return (normalized);
